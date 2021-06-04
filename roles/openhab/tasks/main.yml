@@ -53,4 +53,7 @@
       owner: "{{ openhab_user }}"
       group: "{{ openhab_user }}"
       mode: '0644'
-
+     
+tags:
+  - always
+  - install
