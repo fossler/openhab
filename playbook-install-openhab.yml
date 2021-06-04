@@ -1,12 +1,9 @@
 ---
-# install all
 - hosts: "{{ host }}"
   become: yes
   max_fail_percentage: 0
   tasks:
-    - block:
-
-      - include_role:
-          name: openhab
-        tags:
+    - include_role:
+        name: openhab
+      tags:
         - always
