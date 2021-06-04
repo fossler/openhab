@@ -1,10 +1,5 @@
 ---
-install_name: 'berrybase_hdt22'
-install_path: '/opt/{{ install_name }}'
-py_script_name: 'Berrybase-DHT22.py'
-csv_file_path: '/var/opt/{{ install_name }}'
-csv_file_name: 'humidity_and_temp.csv'
+openhab_conf_path: '/etc/openhab'
 service_name: 'berrybase-dht22'
-sleeptime: '300'
-py_user: "berrybase"
-remote_user: "pi"
+remote_user: "ruuth"
+openhab_user: "openhab"

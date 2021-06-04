@@ -1,33 +1,56 @@
 ---
+# see here: https://github.com/schnidrig/openhab-ansible/blob/openhab-3.0/roles/openhab/tasks/openhab.yml
+# https://www.openhab.org/download/
 - block:
-  - name: check if requirements are already initialized
-    ansible.builtin.stat:
-      path: "{{ install_path }}/.requirements.ok"
-    register: req_installed
 
-  - name: "install apt pkg's"
+  - name: check if prerequisites  are already initialized
+    ansible.builtin.stat:
+      path: "{{ openhab_conf_path }}/.prerequisites.ok"
+    register: prereq_installed
+
+  - name: "Install prerequisites"
     ansible.builtin.apt:
       pkg: "{{ apt_pkgs }}"
-    when: req_installed.stat.exists == false
-    tags:
-      - always
+      state: present
+      update_cache: yes
+      update_cache_retries: 2
 
-  - name: Install python pip modules
-    ansible.builtin.pip:
-      name:
-        - pip 
-        - setuptools 
-        - wheel
-        - Adafruit_DHT
-      state: latest
-    when: req_installed.stat.exists == false
-    tags:
-      - always
+  - name: Add Openhab Repo Key
+    ansible.builtin.apt_key:
+      url: https://openhab.jfrog.io/artifactory/api/gpg/key/public
+      state: present
+    when: prereq_installed.stat.exists == false
 
-  - name: Create "{{ install_path }}/.requirements.ok"
+  - name: Add OpenHAB Repo
+    ansible.builtin.apt_repository:
+      repo: "deb https://openhab.jfrog.io/artifactory/openhab-linuxpkg stable main"
+      state: present
+      filename: openhab
+    when: prereq_installed.stat.exists == false
+
+  - name: "install apt pkg"
+    ansible.builtin.apt:
+      pkg: "{{ item }}"
+      state: present
+      update_cache: yes
+      update_cache_retries: 2
+    loop:
+      - openhab
+      - openhab-addons
+    when: prereq_installed.stat.exists == false
+
+  - name: Start OpenHAB service
+    ansible.builtin.systemd:
+      name: 'openhab.service'
+      state: started
+      daemon_reload: yes
+      enabled: yes
+
+  - name: Create "{{ openhab_conf_path }}/.prerequisites.ok"
     ansible.builtin.file:
-      path: "{{ install_path }}/.requirements.ok"
-      state: touch
-      owner: "{{ py_user }}"
-      group: "{{ py_user }}"
+      path: "{{ openhab_conf_path }}/.prerequisites.ok"
+      state: file
+      owner: "{{ openhab_user }}"
+      group: "{{ openhab_user }}"
       mode: '0644'
+
